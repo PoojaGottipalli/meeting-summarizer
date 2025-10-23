@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meeting Summarizer | Upload Audio</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: #f4f6f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(90deg, #00695c, #004d40);
+      color: white;
+      text-align: center;
+      padding: 25px;
+      font-size: 1.8em;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 60px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h2 {
+      color: #004d40;
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 25px;
+    }
+
+    .upload-box {
+      border: 2px dashed #00695c;
+      border-radius: 10px;
+      padding: 60px 20px;
+      background: #e0f2f1;
+      color: #004d40;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .upload-box:hover {
+      background: #b2dfdb;
+      transform: scale(1.02);
+    }
+
+    .upload-box p {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .button {
+      display: inline-block;
+      background-color: #00695c;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1rem;
+      border-radius: 6px;
+      margin-top: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .button:hover {
+      background-color: #004d40;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      color: #666;
+      font-size: 0.9em;
+      padding-bottom: 20px;
+    }
+
+    #file-name {
+      color: #00695c;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .loading {
+      display: none;
+      color: #004d40;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      animation: fadeIn 0.8s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <header>🎧 Meeting Summarizer</header>
+
+  <div class="container">
+    <h2>Upload Your Meeting Audio</h2>
+    <p>Upload an audio file of your meeting. The system will transcribe, summarize, and extract key action items automatically.</p>
+
+    <form id="uploadForm" action="/api/v1/upload" method="post" enctype="multipart/form-data">
+      <div class="upload-box" id="uploadBox" onclick="document.getElementById('audio').click()">
+        <p>📁 Click here or drag & drop your audio file</p>
+      </div>
+      <input type="file" name="audio" id="audio" accept=".mp3, .wav, .m4a, .flac, .ogg" required onchange="showFileName()">
+      <p id="file-name"></p>
+      <button type="submit" class="button">Upload & Process</button>
+      <div id="loading" class="loading">Processing your meeting... ⏳</div>
+    </form>
+  </div>
+
+  <footer>
+    © 2025 Meeting Summarizer | Powered by Flask & Gemini AI
+  </footer>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const loading = document.getElementById("loading");
+
+    form.addEventListener("submit", () => {
+      loading.style.display = "block";
+    });
+
+    function showFileName() {
+      const file = document.getElementById("audio").files[0];
+      document.getElementById("file-name").textContent = file ? `Selected: ${file.name}` : "";
+    }
+  </script>
+</body>
+</html>

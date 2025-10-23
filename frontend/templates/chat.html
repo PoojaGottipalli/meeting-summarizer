@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Chat Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+</head>
+<body>
+  <header>
+    <h1>💬 AI Chat Assistant</h1>
+  </header>
+
+  <main>
+    <div id="chat-box"></div>
+    <form id="chat-form">
+      <input type="text" id="user-input" placeholder="Type your message..." required>
+      <button type="submit">Send</button>
+    </form>
+  </main>
+</body>
+</html>
