@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import sqlite3
-from db import DB_PATH
+from backend.db import init_db, DB_PATH
+
 
 sessions_bp = Blueprint("sessions_bp", __name__, url_prefix="/api/v1/sessions")
 
