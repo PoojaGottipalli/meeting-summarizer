@@ -166,10 +166,12 @@
           body: formData
         });
 
-        if (response.ok && response.redirected) {
-          window.location.href = response.url;
-        } else if (!response.ok) {
-          alert("Upload failed. Please try again.");
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          window.location.href = `/api/v1/meetings/${data.meeting_id}`;
+        } else {
+          alert("Upload failed: " + (data.error || "Unknown error"));
           loading.style.display = "none";
           submitBtn.disabled = false;
         }

@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Blueprint, request, render_template, redirect, url_for, flash
+from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify
 from werkzeug.utils import secure_filename
 from backend.db import init_db, DB_PATH
 
@@ -22,11 +22,11 @@ def allowed_file(filename):
 def upload():
     """Handle audio upload, transcription, and summarization."""
     if "audio" not in request.files:
-        return redirect(url_for("home"))
+        return jsonify({"error": "No file part"}), 400
 
     file = request.files["audio"]
     if file.filename == "":
-        return redirect(url_for("home"))
+        return jsonify({"error": "No selected file"}), 400
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -37,7 +37,7 @@ def upload():
             transcript = transcribe_with_gemini(save_path)
         except Exception as e:
             print(f"Transcription failed: {e}")
-            return redirect(url_for("home"))
+            return jsonify({"error": f"Transcription failed: {e}"}), 500
 
         try:
             summary, people, action_items = summarize_meeting_with_tags(transcript)
@@ -56,13 +56,17 @@ def upload():
             conn.commit()
             conn.close()
             
-            return redirect(url_for("meetings_bp.view_meeting", meeting_id=meeting_id))
+            return jsonify({
+                "success": True,
+                "meeting_id": meeting_id,
+                "message": "Meeting processed successfully"
+            }), 200
         except Exception as e:
             print(f"Database save failed: {e}")
-            return redirect(url_for("home"))
+            return jsonify({"error": f"Database save failed: {e}"}), 500
 
     else:
-        return redirect(url_for("home"))
+        return jsonify({"error": "Unsupported file type"}), 400
 
 
 @meetings_bp.route("/meetings/list", methods=["GET"])

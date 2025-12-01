@@ -1,20 +1,40 @@
 import os
 from dotenv import load_dotenv
-from google import genai
 
-# Load .env only when running locally
+# Import the GenAI client lazily below so the Flask app can start even when
+# the `google`/`genai` package is not installed during development.
+genai = None
+
+# Load local environment variables from `.env` when present
 load_dotenv()
 
-# Read from Railway env or local .env
+# Read API key from environment (Railway or local .env)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY not set. Add it in Railway → Variables.")
+# Initialize Gemini client lazily. Avoid raising on import so the web app can
+# start even when the API key isn't configured. Functions below will raise
+# a clear error if the client isn't available when called.
+client = None
+if GEMINI_API_KEY:
+    try:
+        # Try lazy import of the GenAI client
+        from google import genai as _genai
+        genai = _genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception:
+        # Missing package or client init failed — keep client as None so we
+        # raise a helpful error only when a function actually needs the LLM.
+        client = None
+        genai = None
 
-# Initialize Gemini client
-client = genai.Client(api_key=GEMINI_API_KEY)
+def _ensure_client():
+    if client is None:
+        raise RuntimeError(
+            "GEMINI_API_KEY not configured. Set the environment variable 'GEMINI_API_KEY'"
+        )
 
 def transcribe_with_gemini(filepath):
+    _ensure_client()
     uploaded = client.files.upload(file=filepath)
     prompt = "Generate a full transcript of this meeting audio file."
     resp = client.models.generate_content(
@@ -30,6 +50,7 @@ def summarize_meeting_with_tags(text):
         "ACTION_ITEMS: tasks or follow-ups.\n"
         "Return plain text with these sections clearly marked."
     )
+    _ensure_client()
     resp = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=[prompt, text],
