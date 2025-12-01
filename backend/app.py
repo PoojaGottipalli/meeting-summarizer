@@ -2,8 +2,9 @@ import os
 import sys
 from flask import Flask, render_template
 from dotenv import load_dotenv
-from routes.meeting import meetings_bp
-from routes.sessions import sessions_bp
+from backend.routes.meeting import meetings_bp
+from backend.routes.sessions import sessions_bp
+
 
 
 # --- Define paths ---
