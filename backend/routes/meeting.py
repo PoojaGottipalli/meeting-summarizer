@@ -4,7 +4,8 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from backend.db import init_db, DB_PATH
 
-from llm import transcribe_with_gemini, summarize_meeting_with_tags
+from backend.llm import transcribe_with_gemini, summarize_meeting_with_tags
+
 
 meetings_bp = Blueprint("meetings_bp", __name__, url_prefix="/api/v1")
 
