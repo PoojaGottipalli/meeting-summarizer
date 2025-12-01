@@ -2,6 +2,9 @@ import os
 import sys
 from flask import Flask, render_template
 from dotenv import load_dotenv
+from routes.meeting import meetings_bp
+from routes.sessions import sessions_bp
+
 
 # --- Define paths ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))       # backend/
@@ -15,9 +18,6 @@ if PROJECT_ROOT not in sys.path:
 # --- Load environment variables (.env inside backend) ---
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-# --- Import Blueprints ---
-from routes.meeting import meetings_bp
-from routes.sessions import sessions_bp
 
 # --- Create Flask app ---
 app = Flask(
