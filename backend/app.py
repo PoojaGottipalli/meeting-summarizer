@@ -44,7 +44,7 @@ def chat():
 
 @app.route("/meetings")
 def meetings_page():
-    return render_template("metings.html")  # ✅ matches your file name
+    return render_template("meetings_list.html")
 
 if __name__ == "__main__":
     print("✅ Template path:", os.path.join(FRONTEND_DIR, "templates"))

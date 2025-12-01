@@ -22,12 +22,10 @@ def allowed_file(filename):
 def upload():
     """Handle audio upload, transcription, and summarization."""
     if "audio" not in request.files:
-        flash("No file part in request")
         return redirect(url_for("home"))
 
     file = request.files["audio"]
     if file.filename == "":
-        flash("No selected file")
         return redirect(url_for("home"))
 
     if file and allowed_file(file.filename):
@@ -35,21 +33,18 @@ def upload():
         save_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(save_path)
 
-        # Step 1: Transcribe audio
         try:
             transcript = transcribe_with_gemini(save_path)
         except Exception as e:
-            flash(f"Transcription failed: {e}")
+            print(f"Transcription failed: {e}")
             return redirect(url_for("home"))
 
-        # Step 2: Summarize and extract action items
         try:
             summary, people, action_items = summarize_meeting_with_tags(transcript)
         except Exception as e:
-            flash(f"Summarization failed: {e}")
+            print(f"Summarization failed: {e}")
             summary, people, action_items = ("", "", "")
 
-        # Step 3: Save to SQLite
         try:
             conn = sqlite3.connect(DB_PATH)
             cur = conn.cursor()
@@ -60,15 +55,39 @@ def upload():
             meeting_id = cur.lastrowid
             conn.commit()
             conn.close()
+            
+            return redirect(url_for("meetings_bp.view_meeting", meeting_id=meeting_id))
         except Exception as e:
-            flash(f"Database save failed: {e}")
+            print(f"Database save failed: {e}")
             return redirect(url_for("home"))
 
-        return redirect(url_for("meetings_bp.view_meeting", meeting_id=meeting_id))
-
     else:
-        flash("Unsupported file type. Please upload a valid audio file.")
         return redirect(url_for("home"))
+
+
+@meetings_bp.route("/meetings/list", methods=["GET"])
+def list_meetings():
+    """Fetch all meetings as JSON for the meetings list page."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT id, filename, summary, created_at FROM meetings ORDER BY id DESC"
+    )
+    rows = cur.fetchall()
+    conn.close()
+
+    meetings = [
+        {
+            "id": row[0],
+            "filename": row[1],
+            "summary": row[2][:100] + "..." if row[2] and len(row[2]) > 100 else row[2],
+            "created_at": row[3],
+        }
+        for row in rows
+    ]
+    
+    from flask import jsonify
+    return jsonify(meetings)
 
 
 @meetings_bp.route("/meetings/<int:meeting_id>")

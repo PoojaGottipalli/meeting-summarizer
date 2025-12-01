@@ -128,9 +128,13 @@
       </div>
       <input type="file" name="audio" id="audio" accept=".mp3, .wav, .m4a, .flac, .ogg" required onchange="showFileName()">
       <p id="file-name"></p>
-      <button type="submit" class="button">Upload & Process</button>
+      <button type="submit" class="button" id="submitBtn">Upload & Process</button>
       <div id="loading" class="loading">Processing your meeting... ⏳</div>
     </form>
+
+    <div style="margin-top: 30px; text-align: center;">
+      <a href="/meetings" style="color: #00695c; text-decoration: none; font-weight: 500;">📋 View All My Meetings →</a>
+    </div>
   </div>
 
   <footer>
@@ -140,15 +144,68 @@
   <script>
     const form = document.getElementById("uploadForm");
     const loading = document.getElementById("loading");
+    const submitBtn = document.getElementById("submitBtn");
 
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const fileInput = document.getElementById("audio");
+      if (!fileInput.files[0]) {
+        alert("Please select a file first");
+        return;
+      }
+
       loading.style.display = "block";
+      submitBtn.disabled = true;
+
+      const formData = new FormData(form);
+      
+      try {
+        const response = await fetch("/api/v1/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        if (response.ok && response.redirected) {
+          window.location.href = response.url;
+        } else if (!response.ok) {
+          alert("Upload failed. Please try again.");
+          loading.style.display = "none";
+          submitBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        alert("Upload failed: " + error.message);
+        loading.style.display = "none";
+        submitBtn.disabled = false;
+      }
     });
 
     function showFileName() {
       const file = document.getElementById("audio").files[0];
       document.getElementById("file-name").textContent = file ? `Selected: ${file.name}` : "";
     }
+
+    document.getElementById("uploadBox").addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById("uploadBox").style.background = "#b2dfdb";
+    });
+
+    document.getElementById("uploadBox").addEventListener("dragleave", () => {
+      document.getElementById("uploadBox").style.background = "#e0f2f1";
+    });
+
+    document.getElementById("uploadBox").addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        document.getElementById("audio").files = files;
+        showFileName();
+      }
+      document.getElementById("uploadBox").style.background = "#e0f2f1";
+    });
   </script>
 </body>
 </html>

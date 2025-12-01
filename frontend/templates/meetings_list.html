@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Meetings</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: #f4f6f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(90deg, #00695c, #004d40);
+      color: white;
+      text-align: center;
+      padding: 25px;
+      font-size: 1.8em;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      display: inline-block;
+      background-color: #00695c;
+      color: white;
+      text-decoration: none;
+      padding: 12px 25px;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      transition: 0.3s;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #004d40;
+    }
+
+    .button-secondary {
+      background-color: #607d8b;
+    }
+
+    .button-secondary:hover {
+      background-color: #455a64;
+    }
+
+    h2 {
+      color: #004d40;
+      margin-top: 0;
+      border-bottom: 2px solid #00695c;
+      padding-bottom: 10px;
+    }
+
+    .meetings-list {
+      display: grid;
+      gap: 15px;
+    }
+
+    .meeting-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      background: #fafafa;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .meeting-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 105, 92, 0.2);
+      background: #f0f8f7;
+    }
+
+    .meeting-card a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .meeting-title {
+      font-weight: 600;
+      color: #00695c;
+      font-size: 1.1rem;
+      margin: 0 0 10px 0;
+    }
+
+    .meeting-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .meeting-summary {
+      color: #555;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      max-height: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state h3 {
+      color: #004d40;
+      margin-bottom: 15px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #666;
+      font-size: 0.9em;
+      padding-bottom: 20px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      animation: fadeIn 0.8s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <header>📋 My Meetings</header>
+
+  <div class="container">
+    <div class="action-buttons">
+      <a href="/" class="button">⬆️ Upload New Meeting</a>
+      <a href="/meetings" class="button button-secondary">🔄 Refresh</a>
+    </div>
+
+    <h2>📚 Meeting History</h2>
+    <div id="meetingsList" class="meetings-list">
+      <p style="text-align: center; color: #999;">Loading meetings...</p>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Meeting Summarizer | Powered by Flask & Gemini AI
+  </footer>
+
+  <script>
+    async function loadMeetings() {
+      try {
+        const response = await fetch("/api/v1/meetings/list");
+        const meetings = await response.json();
+        const listContainer = document.getElementById("meetingsList");
+
+        if (meetings.length === 0) {
+          listContainer.innerHTML = `
+            <div class="empty-state">
+              <h3>📭 No meetings yet</h3>
+              <p>Upload your first meeting audio to get started!</p>
+              <a href="/" class="button" style="display: inline-block; margin-top: 15px;">⬆️ Upload Now</a>
+            </div>
+          `;
+          return;
+        }
+
+        listContainer.innerHTML = meetings.map(meeting => `
+          <a href="/api/v1/meetings/${meeting.id}" class="meeting-card">
+            <div class="meeting-title">🎙️ ${meeting.filename}</div>
+            <div class="meeting-meta">
+              <span>📅 ${new Date(meeting.created_at).toLocaleDateString()}</span>
+              <span>🕐 ${new Date(meeting.created_at).toLocaleTimeString()}</span>
+            </div>
+            <div class="meeting-summary">${meeting.summary || "No summary available"}</div>
+          </a>
+        `).join("");
+      } catch (error) {
+        console.error("Error loading meetings:", error);
+        document.getElementById("meetingsList").innerHTML = `
+          <div class="empty-state">
+            <h3>⚠️ Error loading meetings</h3>
+            <p>Please try refreshing the page.</p>
+          </div>
+        `;
+      }
+    }
+
+    loadMeetings();
+  </script>
+</body>
+</html>
