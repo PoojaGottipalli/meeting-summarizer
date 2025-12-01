@@ -1,4 +1,6 @@
 flask
+gunicorn 
+
 pymongo
 python-dotenv
 werkzeug
